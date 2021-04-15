@@ -24,23 +24,26 @@ class Budget:
             print("3. Transfer to another category")
             print("4. Check total budget balance")
             print("5. Go to Home")
-            option = int(input(""))
-            if option == 1:
-                self.deposit()
-                isTransacting = True
-            elif option == 2:
-                self.withdraw()
-                isTransacting = True
-            elif option == 3:
-                self.transfer()
-                isTransacting = True
-            elif option == 4:
-                self.checkBalance()
-                isTransacting = True
-            elif option == 5:
-                init()
-            else:
-                print("Invalid selection")
+            try:
+                option = int(input(""))
+                if option == 1:
+                    self.deposit()
+                    isTransacting = True
+                elif option == 2:
+                    self.withdraw()
+                    isTransacting = True
+                elif option == 3:
+                    self.transfer()
+                    isTransacting = True
+                elif option == 4:
+                    self.checkBalance()
+                    isTransacting = True
+                elif option == 5:
+                    init()
+                else:
+                    print("Invalid selection")
+            except (ValueError, IndexError):
+                print("Invalid Selection. Please select within the range above")
                 
     def deposit(self):
         print("---------" *10)
@@ -54,7 +57,7 @@ class Budget:
         withdrawn = int(input("How much would you like to withdraw? \n"))
         if withdrawn <= Budget.balance[Budget.budget_category[self.category]]:
             Budget.balance[Budget.budget_category[self.category]] -= withdrawn
-            print("%d Naira has been deducted from your %s budget " %( withdrawn, Budget.budget_category[self.category]))
+            print("Take you cash. %d Naira has been deducted from your %s budget " %( withdrawn, Budget.budget_category[self.category]))
             self.secondTransaction()
         else:
             print("Insufficient Funds")
@@ -62,42 +65,49 @@ class Budget:
     
     def transfer(self):
         print("---------" *10)
-        option = self.category + 1
-        transferAmt = int(input("How much would you like to transfer? \n"))
-        print("To which category?")
-        print("1. Food \n2. Clothing \n3. Entertainment \n")
-        option2 = int(input(""))
-        if option == option2:
-            print("You cannot transfer to the same category")
-            self.transfer()
-        elif option != option2:
-            if transferAmt <= Budget.balance[Budget.budget_category[self.category]]:
-                Budget.balance[Budget.budget_category[option2 -1]] += transferAmt
-                Budget.balance[Budget.budget_category[self.category]] -= transferAmt
-                print("%d Naira has been transferred to %s budget" %(transferAmt, Budget.budget_category[option2 -1]))
-                self.secondTransaction()
+        try:
+            option = self.category + 1
+            transferAmt = int(input("How much would you like to transfer? \n"))
+            print("To which category?")
+            for index, category in enumerate(Budget.budget_category):
+                print(f"{index + 1}. {category}")
+            option2 = int(input(""))
+            if option == option2:
+                print("You cannot transfer to the same category")
+                self.transfer()
+            elif option != option2:
+                if transferAmt <= Budget.balance[Budget.budget_category[self.category]]:
+                    Budget.balance[Budget.budget_category[option2 -1]] += transferAmt
+                    Budget.balance[Budget.budget_category[self.category]] -= transferAmt
+                    print("%d Naira has been transferred to %s budget" %(transferAmt, Budget.budget_category[option2 -1]))
+                    self.secondTransaction()
+                else:
+                    print("Insufficient Funds")
+                    self.secondTransaction()
             else:
-                print("Insufficient Funds")
+                print("Invalid selection.")
                 self.secondTransaction()
-        else:
-            print("Invalid selection.")
-            self.secondTransaction()
-            
+        except (ValueError, IndexError):
+            print("Invalid Selection. Please select within the range above")   
             
     def secondTransaction(self):
-        option = int(input("Would you like to do anything else? 1. Yes 2. No \n"))
-        if option ==1:
-            self.transactions()
-        elif option == 2:
-            print("Have a good day")
-            exit()
-        else:
-            print("Invalid selection. Please select between 1 -3")
+        try:
+            option = int(input("Would you like to do anything else? 1. Yes 2. No \n"))
+            if option ==1:
+                self.transactions()
+            elif option == 2:
+                print("Have a good day")
+                exit()
+            else:
+                print("Invalid selection. Please select between 1 -3")
+        except (ValueError, IndexError):
+            print("Invalid Selection. Please select within the range above")
             self.secondTransaction()
             
     def checkBalance(self):
         print("Your budget balance as at %s is : "% today)
-        print(Budget.balance)
+        for key in Budget.balance:
+            print(key, ":", Budget.balance[key])
         print("--------" *10)
         self.secondTransaction()
          
@@ -109,24 +119,30 @@ def init():
     print("Welcome to your SaveWithSense budget App")
     isSelecting = False
     while isSelecting==False:
-        print("Select Category")
-        option = int(input("1. Food \n2. Clothing \n3. Entertainment \n"))
-        if option == 1:
-            isSelecting = True
-            budget_food = Budget(1)
-            budget_food.transactions()
-        elif option == 2:
-            isSelecting = True
-            budget_clothing = Budget(2)
-            budget_clothing.transactions() 
-        elif option == 3:
-            isSelecting = True
-            budget_ent = Budget(3)
-            budget_ent.transactions()                  
-        else:
-            print("Invalid Selection. Please select between 1 -3")
-        
+        print("Select Category or press 0 to create a new category")
+        def printCategories():
+            for index, category in enumerate(Budget.budget_category):
+                print(f"{index + 1}. {category}")
+        printCategories()
+        try:
+            option = int(input("")) 
+            if option == 0:
+                new_category = input("Enter category name: \n")
+                new_category = new_category.capitalize() 
+                if new_category in Budget.budget_category :
+                    print("This category already exists")
+                    print("----------" *10)
+                else:
+                    Budget.budget_category.append(new_category)
+                    Budget.balance[new_category] = 0
+                    print(f"Your new {new_category} category has been created")
+                    print("----------" *10)
+            elif option != 0:
+                category_selected = Budget(option)
+                category_selected.transactions()
+            else:
+                print("Invalid Selection.")
+        except (ValueError, IndexError):
+            print("Invalid Selection. Please select within the range above **")
+            
 init()
-	
-
-
